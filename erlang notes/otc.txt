@@ -1,0 +1,45 @@
+ 
+ 并发：
+
+在erlang 里，进程属于程序语言而非操作系统
+
+Pid = spawn(Fun) % 创建一个新的并发进程，用于对Fun求值。新进程与调用者所在的进程并发运行。
+spawn 返回一个Pid[process identifier(进程标示符)的缩写]。你可以使用pid向进程发送消息
+Pid ! Message % 向标示符为pid的进程发送消息。消息发送是异步的。
+！被称为发送操作符
+Pid!M 定义的返回值是它所发送的消息本身。因此Pid1!Pid2!...!M 意味着将消息M发送到Pid1,Pid2...等所有进程中
+
+receive ... end
+接收一个发给当前进程的消息。他的语法是这样的：
+receive
+	Pattern1 [When Guard1] ->
+		Expressions1;
+	Pattern2 [When Guard2] ->
+		Expressions2;
+	....
+end
+
+当一个消息到达进程时，系统会尝试与Pattern1匹配。如果成功，那么对Expressions1 求值，以此类推
+
+>>>>>>>>>>>>>>>>>>>>................................
+
+self() 是客户进程自己的Pid 
+From 参数标示的进程发送结果
+
+rpc[remote procedure call 远程过程调用]
+它用来封装发送请求和等待回应
+
+rpc(Pid,Request) ->
+	Pid ! {self(),Request},
+	receive
+		{Pid,Response} ->
+			.....
+	end.
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>...
+我们用BIF ,中的erlang:system_info(process_limit) 来查找系统允许的进程数上限。
+这个值时预设的，在你的系统中，配置未必允许创建这么大的数量。当试图限制的进程的进程数时，
+系统就会崩溃，然后抛出一个错误报告
+要超过这个限制，必须在启动Erlang虚拟机时带上+P参数,如下：
+$erl +P 5000000
